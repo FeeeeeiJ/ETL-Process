@@ -3,6 +3,7 @@ data=data[!duplicated(data$movie_title),]
 
 View(data)
 names(data)
+require(dplyr)
 
 """
 Revised schema:
