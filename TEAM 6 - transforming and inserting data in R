@@ -155,3 +155,29 @@ length(movie_cost$movie_id)==length(unique(movie_cost$movie_id))
 ## table 10: Movie_reviews
 movie_reviews=distinct(df_movie_id[,c(3,6,15,20,16,29)])
 length(movie_reviews$movie_id)==length(unique(movie_reviews$movie_id))
+
+
+
+## connecting database and inserting values
+require('RPostgreSQL')
+# Load the PostgreSQL driver
+drv <- dbDriver('PostgreSQL')
+# Create a connection
+con <- dbConnect(drv, dbname = 'movie', host = '35.237.12.36', port = 5432,
+                 user = 'postgres', password = 'pwd4APAN5310') 
+
+# Write data from dataframe to SQL
+dbWriteTable(con, name="country", value = country, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie", value = movie, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie_genres", value = movie_genres, row.names = FALSE, append = TRUE)
+movie_keywords <- na.omit(movie_keywords)
+dbWriteTable(con, name="movie_keywords", value = movie_keywords, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="actors", value = actors, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie_actors", value = movie_actors, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="directors", value = directors, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie_director", value = movie_director, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie_cost", value = movie_cost, row.names = FALSE, append = TRUE)
+dbWriteTable(con, name="movie_reviews", value = movie_reviews, row.names = FALSE, append = TRUE)
+# Free up resources
+dbDisconnect(con)
+dbUnloadDriver(drv)
