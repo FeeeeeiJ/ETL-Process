@@ -1,0 +1,157 @@
+data=read.csv('movie_metadata.csv',header=TRUE)
+data=data[!duplicated(data$movie_title),]
+
+View(data)
+names(data)
+
+"""
+Revised schema:
+
+country (country_id, country_name, language)
+Movie (movie_id, movie_title, imdb_link, movie_year, country_id, color, duration, imdb_score, aspect_ratio, content_rating, facenumber_in_poster)
+Movie_genres (movie_id, genres_name)
+Movie_keywords (movie_id, keyword)
+Actors (actor_id, actor_name, actor_facebook_likes)
+Movie_actors (movie_id, actor_id)
+Directors (director_id, director_name, director_facebook_likes, rank)
+Movie_director (movie_id, director_id)
+Movie_cost (movie_id, gross, budget)
+Movie_reviews (movie_id, num_critic_for_reviews, num_voted_users, num_user_for_reviews, cast_total_facebook_likes, movie_facebook_likes)
+"""
+
+"country (country_id, country_name, language)"
+## table 1: Country 
+country=data[,c(20,21)]
+country=distinct(country)
+country_id=1:length(country$language)
+country$country_id=country_id
+
+
+"Movie (movie_id, movie_title, imdb_link, movie_year, country_id, color, duration, imdb_score, aspect_ratio, content_rating, facenumber_in_poster)"
+## table 2: Movie
+dummy=merge(data,country,by=c("language", "country"))
+names(dummy)
+movie=dummy[,c(14,20,24,29,3,6,26,27,22,18)]
+movie=distinct(movie)
+length(movie$movie_title)==length(unique(movie$movie_title))
+movie_id=1:length(movie$movie_title)
+movie$movie_id=movie_id
+
+
+"Movie_genres (movie_id, genres_name)"
+## table 3: Movie_genres
+df_movie_id=movie[,c(1,11,2)]
+df_movie_id=merge(df_movie_id,data,by=c("movie_title","movie_imdb_link"))
+dummy1=df_movie_id[,c(13,3)]
+
+id=NA
+id.a=NA
+genres=NA
+genres.a=NA
+
+for (i in 1:length(dummy1$movie_id)){
+  g=as.character(dummy1$genres[i])
+  n=length(strsplit(g,"\\|")[[1]])
+  if (n==1){
+    id[i]=dummy1$movie_id[i]
+    genres[i]=g
+  } else{
+    for (j in 1:n){
+      id.a=append(id.a,dummy1$movie_id[i])
+      genres.a=append(genres.a,strsplit(g,"\\|")[[1]][j])
+    }
+  }
+}
+
+id=c(id,id.a)
+genres=c(genres,genres.a)
+movie_genres=data.frame(movie_id=id,genres_name=genres)
+movie_genres=movie_genres[complete.cases(movie_genres),]
+movie_genres=distinct(movie_genres)
+
+
+"Movie_keywords (movie_id, keyword)"
+## table 4: Movie_keywords
+dummy2=df_movie_id[,c(3,19)]
+na=dummy2$plot_keywords[5]
+
+id=NA
+id.a=NA
+keyword=NA
+keyword.a=NA
+
+for (i in 1:length(dummy2$movie_id)){
+  if (dummy2$plot_keywords[i]==na){
+    id[i]=dummy2$movie_id[i]
+    keyword[i]=NA
+  } else {
+    k=as.character(dummy2$plot_keywords[i])
+    n=length(strsplit(k,"\\|")[[1]])
+    for (j in 1:n){
+      id.a=append(id.a,dummy2$movie_id[i])
+      keyword.a=append(keyword.a,strsplit(k,"\\|")[[1]][j])
+      }
+    }
+}
+
+id=c(id,id.a)
+keyword=c(keyword,keyword.a)
+movie_keywords=data.frame(movie_id=id,keyword=keyword)
+movie_keywords=movie_keywords[complete.cases((movie_keywords$movie_id)),]
+
+
+"Actors (actor_id, actor_name, actor_facebook_likes)"
+## table 5: Actors
+d1=data.frame(actor_name=data$actor_1_name,actor_facebook_likes=data$actor_1_facebook_likes)
+d2=data.frame(actor_name=data$actor_2_name,actor_facebook_likes=data$actor_2_facebook_likes)
+d3=data.frame(actor_name=data$actor_3_name,actor_facebook_likes=data$actor_3_facebook_likes)
+actors=rbind(d1,d2,d3)
+actors=distinct(actors)
+na=levels(actors$actor_name)[1]
+actors=actors[actors$actor_name != na,]
+actors=actors[!duplicated(actors$actor_name),]
+actor_id=1:length(actors$actor_name)
+actors$actor_id=actor_id
+
+
+"Movie_actors (movie_id, actor_id)"
+## table 6: Movie_actors
+d1=data.frame(movie_id=df_movie_id$movie_id,actor_name=df_movie_id$actor_1_name)
+d2=data.frame(movie_id=df_movie_id$movie_id,actor_name=df_movie_id$actor_2_name)
+d3=data.frame(movie_id=df_movie_id$movie_id,actor_name=df_movie_id$actor_3_name)
+dummy3=distinct(rbind(d1,d2,d3))
+dummy3=merge(dummy3,actors,by=c("actor_name"))
+movie_actor=data.frame(movie_id=dummy3$movie_id,actor_id=dummy3$actor_id)
+
+
+"Directors (director_id, director_name, director_facebook_likes, rank)"
+## table 7: Directors
+rank=data[,c(2,5)]
+ext.df=read.csv('director rank top 50 - Sheet1.csv',header=TRUE)
+rank=merge(rank,ext.df,by=c("director_name"),all.x=T)
+directors=rank[,c(1,2,3)]
+na=levels(directors$director_name)[1]
+directors=directors[directors$director_name != na,]
+directors=distinct(directors)
+directors=directors[!duplicated(directors$director_name),]
+director_id=1:length(directors$director_name)
+directors$director_id=director_id
+
+
+"Movie_director (movie_id, director_id)"
+## table 8: Movie_director
+dummy4=merge(directors,df_movie_id,by=c("director_name"))
+movie_director=dummy4[,c(3,6)]
+movie_director=distinct(movie_director)
+
+
+"Movie_cost (movie_id, gross, budget)"
+## table 9: Movie_cost
+movie_cost=distinct(df_movie_id[,c(3,12,24)])
+length(movie_cost$movie_id)==length(unique(movie_cost$movie_id))
+
+
+"Movie_reviews (movie_id, num_critic_for_reviews, num_voted_users, num_user_for_reviews, cast_total_facebook_likes, movie_facebook_likes)"
+## table 10: Movie_reviews
+movie_reviews=distinct(df_movie_id[,c(3,6,15,20,16,29)])
+length(movie_reviews$movie_id)==length(unique(movie_reviews$movie_id))
