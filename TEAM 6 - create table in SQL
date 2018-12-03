@@ -1,0 +1,97 @@
+CREATE TABLE country(
+    country_id integer,
+    country varchar(100) not null,
+    language varchar(100),
+    primary key(country_id, country, language)
+);
+
+create table movie(
+  movie_id integer,
+  movie_title varchar(300) NOT NULL,
+  movie_imdb_link varchar(500), 
+  title_year integer, 
+  country_id integer, 
+  color varchar(50), 
+  duration integer, 
+  imdb_score numeric(2,1), 
+  aspect_ratio numeric(5,3), 
+  content_rating varchar(10), 
+  facenumber_in_poster integer,
+  primary key(movie_id)
+);
+
+create table movie_genres(
+  movie_id integer, 
+  genres_name varchar(50) NOT NULL,
+  primary key(movie_id, genres_name),
+  foreign key(movie_id) references movie(movie_id)
+);
+
+create table movie_keywords(
+  movie_id integer,
+  keyword  varchar(500),
+  primary key (movie_id, keyword),
+  foreign key(movie_id) references movie(movie_id) 
+  );
+
+create table actors(
+  actor_id integer,
+  actor_name varchar(200) NOT NULL,
+  actor_facebook_likes integer,
+  primary key (actor_id)
+);
+
+create table movie_actors(
+  movie_id integer,
+  actor_id integer,
+  primary key (movie_id, actor_id),
+  foreign key(movie_id) references movie(movie_id),
+  foreign key(actor_id) references actors(actor_id)
+);
+
+create table directors(
+  director_id integer, 
+  director_name varchar(200) NOT NULL, 
+  director_facebook_likes integer,
+  rank integer,
+  primary key (director_id)
+);
+
+create table movie_director(
+  movie_id integer,
+  director_id integer,
+  primary key(movie_id, director_id),
+  foreign key(movie_id) references movie(movie_id),
+  foreign key(director_id) references directors(director_id)
+);
+
+create table movie_cost(
+  movie_id integer,
+  gross numeric,
+  budget numeric,
+  primary key(movie_id),
+  foreign key(movie_id) references movie(movie_id)
+);
+
+create table movie_reviews(
+  movie_id integer,
+  num_critic_for_reviews integer, 
+  num_voted_users integer, 
+  num_user_for_reviews integer, 
+  cast_total_facebook_likes integer, 
+  movie_facebook_likes integer,
+  primary key (movie_id),
+  foreign key(movie_id) references movie(movie_id)
+);
+
+
+select * from country;
+select * from movie;
+select * from movie_genres;
+select * from movie_keywords;
+select * from actors;
+select * from movie_actors;
+select * from directors;
+select * from movie_director;
+select * from movie_cost;
+select * from movie_reviews;
