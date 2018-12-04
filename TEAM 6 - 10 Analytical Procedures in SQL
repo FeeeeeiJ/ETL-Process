@@ -1,178 +1,184 @@
 #Q1. What are the top 10 movies with the highest IMDB scores of comedy in the USA?
 
-    select t.movie_title, t.imdb_score, t.movie_imdb_link, t.title_year, t.color, t.duration
-    from movie t
-    left join country a   
-    on t.country_id = a.country_id
-    left join movie_genres b
-    on t.movie_id = b.movie_id
-    where a.country = 'USA'
-    and b.genres_name = 'Comedy'
-    order by imdb_score desc
-    limit 10;
+ SELECT t.movie_title, 
+               t.imdb_score, 
+	   t.movie_imdb_link, 
+	   t.title_year, 
+	   t.color, 
+	   t.duration
+  FROM movie t
+  LEFT JOIN country a   
+    ON t.country_id = a.country_id
+  LEFT JOIN movie_genres b
+    ON t.movie_id = b.movie_id
+ WHERE a.country = 'USA'
+   AND b.genres_name = 'Comedy'
+ ORDER BY imdb_score DESC
+ LIMIT 10;
 
 #Q2. Who acted most horror movies?
 
-    select c.actor_name, count(1)
-    from movie t
-    left join movie_genres a
-    on t.movie_id = a.movie_id
-    left join movie_actors b
-    on t.movie_id = b.movie_id
-    left join actors c
-    on c.actor_id = b.actor_id
-    where a.genres_name = 'Horror'
-    group by actor_name
-    order by count(1) desc;
+    SELECT c.actor_name, count(1)
+    FROM movie t
+    LEFT JOIN movie_genres a
+    ON t.movie_id = a.movie_id
+    LEFT JOIN movie_actors b
+    ON t.movie_id = b.movie_id
+    LEFT JOIN actors c
+    ON c.actor_id = b.actor_id
+    WHERE a.genres_name = 'Horror'
+    GROUP BY actor_name
+    ORDER BY count(1) desc;
 
 #Q2.1 What are the horror movies acted by the top 10 horror movie actors?
 
 with actor_horror_count as (
-    select c.actor_name, count(1)
-    from movie t
-    left join movie_genres a
-    on t.movie_id = a.movie_id
-    left join movie_actors b
-    on t.movie_id = b.movie_id
-    left join actors c
-    on c.actor_id = b.actor_id
-    where a.genres_name = 'Horror'
-    group by actor_name
-    order by count(1) desc
+    SELECT c.actor_name, count(1)
+    FROM movie t
+    LEFT JOIN movie_genres a
+    ON t.movie_id = a.movie_id
+    LEFT JOIN movie_actors b
+    ON t.movie_id = b.movie_id
+    LEFT JOIN actors c
+    ON c.actor_id = b.actor_id
+    WHERE a.genres_name = 'Horror'
+    GROUP BY actor_name
+    ORDER BY count(1) desc
     limit 10
 )
-select c.actor_name, t.movie_title, t.imdb_score, t.movie_imdb_link, 
+SELECT c.actor_name, t.movie_title, t.imdb_score, t.movie_imdb_link, 
            t.title_year, t.duration, t.content_rating, d.country, d.language
-from movie t
-left join movie_genres a
-on t.movie_id = a.movie_id
-left join movie_actors b
-on t.movie_id = b.movie_id
-left join actors c
-on c.actor_id = b.actor_id
-left join country d
-on d.country_id = t.country_id
-where c.actor_name in (select actor_name from actor_horror_count)
-and a.genres_name = 'Horror';
+FROM movie t
+LEFT JOIN movie_genres a
+ON t.movie_id = a.movie_id
+LEFT JOIN movie_actors b
+ON t.movie_id = b.movie_id
+LEFT JOIN actors c
+ON c.actor_id = b.actor_id
+LEFT JOIN country d
+ON d.country_id = t.country_id
+WHERE c.actor_name in (SELECT actor_name FROM actor_horror_count)
+AND a.genres_name = 'Horror';
 
 #Q3. What are the movies directed by the top 50 popular directors?
 
-    select b.director_name, b.rank, t.movie_title, t.imdb_score, t.movie_imdb_link, 
+    SELECT b.director_name, b.rank, t.movie_title, t.imdb_score, t.movie_imdb_link, 
                t.title_year, t.duration, t.content_rating, c.country, c.language
-        from movie t
-        left join movie_director a
-        on t.movie_id = a.movie_id
-        left join directors b
-        on a.director_id = b.director_id
-        left join country c
-        on t.country_id = c.country_id
-        where b.rank is not null
-        order by b.rank asc, imdb_score desc;
+        FROM movie t
+        LEFT JOIN movie_director a
+        ON t.movie_id = a.movie_id
+        LEFT JOIN directors b
+        ON a.director_id = b.director_id
+        LEFT JOIN country c
+        ON t.country_id = c.country_id
+        WHERE b.rank is not null
+        ORDER BY b.rank asc, imdb_score desc;
 
 #Q4. The average gross, budget, ROI of each movie genre.
 
-    select a.genres_name, 
+    SELECT a.genres_name, 
                round(avg(b.gross),4) average_gross, 
  	    round(avg(b.budget),4) average_budget,
   	    round((avg(b.gross) - avg(b.budget)) / avg(b.budget), 2) ROI
-    from movie t
-    left join movie_genres a
-    on t.movie_id = a.movie_id
-    left join movie_cost b
-    on t.movie_id = b.movie_id
-    group by a.genres_name
+    FROM movie t
+    LEFT JOIN movie_genres a
+    ON t.movie_id = a.movie_id
+    LEFT JOIN movie_cost b
+    ON t.movie_id = b.movie_id
+    GROUP BY a.genres_name
     having round(avg(b.gross),4) is not null
-    order by (avg(b.gross) - avg(b.budget)) / avg(b.budget) desc;
+    ORDER BY (avg(b.gross) - avg(b.budget)) / avg(b.budget) desc;
 
 #Q5. Movies with the highest ROI.
 
-    select t.movie_title, a.gross, a.budget, round((a.gross-a.budget)/a.budget, 2) roi,
+    SELECT t.movie_title, a.gross, a.budget, round((a.gross-a.budget)/a.budget, 2) roi,
               t.imdb_score, c.director_name, c.rank, t.movie_imdb_link, 
      	   t.title_year, t.duration, t.content_rating
-    from movie t
-    left join movie_cost a
-    on t.movie_id = a.movie_id
-    left join movie_director b
-    on t.movie_id = b.movie_id
-    left join directors c
-    on b.director_id = c.director_id
-    where (a.gross-a.budget)/a.budget is not null
-    order by (a.gross-a.budget)/a.budget desc;
+    FROM movie t
+    LEFT JOIN movie_cost a
+    ON t.movie_id = a.movie_id
+    LEFT JOIN movie_director b
+    ON t.movie_id = b.movie_id
+    LEFT JOIN directors c
+    ON b.director_id = c.director_id
+    WHERE (a.gross-a.budget)/a.budget is not null
+    ORDER BY (a.gross-a.budget)/a.budget desc;
 
 #Q6. What are the average IMDB scores in different countries?
 
-    select a.country, round(avg(imdb_score),2) average_imdb
-    from movie t
-    left join country a
-    on t.country_id = a.country_id
-    group by a.country
+    SELECT a.country, round(avg(imdb_score),2) average_imdb
+    FROM movie t
+    LEFT JOIN country a
+    ON t.country_id = a.country_id
+    GROUP BY a.country
     having a.country not in ('')
-    order by avg(imdb_score) desc;
+    ORDER BY avg(imdb_score) desc;
 
 #Q7. The movie with the highest IMDB score in each country.
 
     with imdb_each_country as
-        (select a.country, 
+        (SELECT a.country, 
                     t.movie_title, t.imdb_score, t.movie_imdb_link, 
     	         t.title_year, t.duration, t.content_rating, a.language,
-               rank() over (partition by a.country order by t.imdb_score desc) rank_in_country
-          from movie t
-          left join country a
-          on t.country_id = a.country_id)
-    select * from imdb_each_country where rank_in_country = 1;
-    and country not in ('');
+               rank() over (partition by a.country ORDER BY t.imdb_score desc) rank_in_country
+          FROM movie t
+          LEFT JOIN country a
+          ON t.country_id = a.country_id)
+    SELECT * FROM imdb_each_country WHERE rank_in_country = 1
+    AND country not in ('');
 
 #Q8. The movie with the highest IMDB score in each genre
 
     with imdb_each_genre as
-        (select a.genres_name, 
+        (SELECT a.genres_name, 
                     t.movie_title, t.imdb_score, t.movie_imdb_link, 
                     t.title_year, t.duration, t.content_rating, b.country, b.language,
-       rank() over (partition by a.genres_name order by t.imdb_score desc) rank_in_genre
-         from movie t
-         left join movie_genres a
-         on t.movie_id = a.movie_id
-         left join country b
-         on t.country_id = b.country_id)
-    select * from imdb_each_genre where rank_in_genre = 1;
+       rank() over (partition by a.genres_name ORDER BY t.imdb_score desc) rank_in_genre
+         FROM movie t
+         LEFT JOIN movie_genres a
+         ON t.movie_id = a.movie_id
+         LEFT JOIN country b
+         ON t.country_id = b.country_id)
+    SELECT * FROM imdb_each_genre WHERE rank_in_genre = 1;
+
 
 #Q9. Do the actors who act in more movies have more facebook_likes?
 
-    select b.actor_name, count(1) num_of_movies, b.actor_facebook_likes
-    from movie t
-    left join movie_actors a
-    on t.movie_id = a.movie_id
-    left join actors b
-    on a.actor_id = b.actor_id
-    group by b.actor_name, b.actor_facebook_likes
-    order by count(1) desc;
+SELECT b.actor_name, COUNT(1) num_of_movies, b.actor_facebook_likes
+    FROM movie t
+    LEFT JOIN movie_actors a
+    ON t.movie_id = a.movie_id
+    LEFT JOIN actors b
+    ON a.actor_id = b.actor_id
+    GROUP BY b.actor_name, b.actor_facebook_likes
+    ORDER BY COUNT(1) DESC;
 
 #Q10. What movies are having the highest total facebook likes from the homepages of actors, directors, cast, and the movie itself?
 
-    with movie_actor_facebook as(
-        select t.movie_id, t.movie_title, sum(b.actor_facebook_likes) total_actor_fb_likes
-        from movie t
-        left join movie_actors a
-        on t.movie_id = a.movie_id
-        left join actors b
-        on b.actor_id = a.actor_id
-        group by t.movie_id, t.movie_title)
+WITH movie_actor_facebook AS(
+  SELECT t.movie_id, t.movie_title, sum(b.actor_facebook_likes) total_actor_fb_likes
+  FROM movie t
+  LEFT JOIN movie_actors a
+  ON t.movie_id = a.movie_id
+  LEFT JOIN actors b
+  ON b.actor_id = a.actor_id
+  GROUP BY t.movie_id, t.movie_title)
 
-    select t.movie_title, 
+SELECT t.movie_title, 
        (c.director_facebook_likes + d.cast_total_facebook_likes + d.movie_facebook_likes + e.total_actor_fb_likes) total_fb_likes,
-              t.imdb_score, t.movie_imdb_link, 
-              t.title_year, t.duration, t.content_rating, a.country, a.language
+       t.imdb_score, t.movie_imdb_link, 
+       t.title_year, t.duration, t.content_rating, a.country, a.language
 
-    from movie t
-    left join country a
-    on t.country_id = a.country_id
-    left join movie_director b
-    on t.movie_id = b.movie_id
-    left join directors c
-    on b.director_id = c.director_id
-    left join movie_reviews d
-    on t.movie_id = d.movie_id
-    left join movie_actor_facebook e
-    on t.movie_id = e.movie_id
-where (c.director_facebook_likes + d.cast_total_facebook_likes + d.movie_facebook_likes + e.total_actor_fb_likes) is not null
-order by (c.director_facebook_likes + d.cast_total_facebook_likes + d.movie_facebook_likes + e.total_actor_fb_likes) desc;
+FROM movie t
+LEFT JOIN country a
+ON t.country_id = a.country_id
+LEFT JOIN movie_director b
+ON t.movie_id = b.movie_id
+LEFT JOIN directors c
+ON b.director_id = c.director_id
+LEFT JOIN movie_reviews d
+ON t.movie_id = d.movie_id
+LEFT JOIN movie_actor_facebook e
+ON t.movie_id = e.movie_id
+WHERE (c.director_facebook_likes + d.cast_total_facebook_likes + d.movie_facebook_likes + e.total_actor_fb_likes) IS NOT NULL
+ORDER BY (c.director_facebook_likes + d.cast_total_facebook_likes + d.movie_facebook_likes + e.total_actor_fb_likes) DESC;
