@@ -1,11 +1,11 @@
-create table country(
+CREATE TABLE country(
     country_id integer,
-    country varchar(100) not null,
+    country varchar(100),
     language varchar(100),
-    primary key(country_id, country, language)
+    PRIMARY KEY(country_id)
 );
 
-create table movie(
+CREATE TABLE movie(
   movie_id integer,
   movie_title varchar(300) NOT NULL,
   movie_imdb_link varchar(500), 
@@ -17,63 +17,63 @@ create table movie(
   aspect_ratio numeric(5,3), 
   content_rating varchar(10), 
   facenumber_in_poster integer,
-  primary key(movie_id)
+  PRIMARY KEY(movie_id)
 );
 
-create table movie_genres(
+CREATE TABLE movie_genres(
   movie_id integer, 
   genres_name varchar(50) NOT NULL,
-  primary key(movie_id, genres_name),
-  foreign key(movie_id) references movie(movie_id)
+  PRIMARY KEY(movie_id, genres_name),
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
 );
 
-create table movie_keywords(
+CREATE TABLE movie_keywords(
   movie_id integer,
   keyword  varchar(500),
-  primary key (movie_id, keyword),
-  foreign key(movie_id) references movie(movie_id) 
+  PRIMARY KEY (movie_id, keyword),
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id) 
   );
 
-create table actors(
+CREATE TABLE  actors(
   actor_id integer,
   actor_name varchar(200) NOT NULL,
   actor_facebook_likes integer,
-  primary key (actor_id)
+  PRIMARY KEY (actor_id)
 );
 
-create table movie_actors(
+CREATE TABLE movie_actors(
   movie_id integer,
   actor_id integer,
-  primary key (movie_id, actor_id),
-  foreign key(movie_id) references movie(movie_id),
-  foreign key(actor_id) references actors(actor_id)
+  PRIMARY KEY (movie_id, actor_id),
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id),
+  FOREIGN KEY(actor_id) REFERENCES actors(actor_id)
 );
 
-create table directors(
+CREATE TABLE directors(
   director_id integer, 
   director_name varchar(200) NOT NULL, 
   director_facebook_likes integer,
   rank integer,
-  primary key (director_id)
+  PRIMARY KEY(director_id)
 );
 
-create table movie_director(
+CREATE TABLE movie_director(
   movie_id integer,
   director_id integer,
-  primary key(movie_id, director_id),
-  foreign key(movie_id) references movie(movie_id),
-  foreign key(director_id) references directors(director_id)
+  PRIMARY KEY(movie_id, director_id),
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id),
+  FOREIGN KEY(director_id) REFERENCES directors(director_id)
 );
 
-create table movie_cost(
+CREATE TABLE movie_cost(
   movie_id integer,
   gross numeric,
   budget numeric,
-  primary key(movie_id),
-  foreign key(movie_id) references movie(movie_id)
+  PRIMARY KEY(movie_id),
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
 );
 
-create table movie_reviews(
+CREATE TABLE movie_reviews(
   movie_id integer,
   num_critic_for_reviews integer, 
   num_voted_users integer, 
@@ -81,17 +81,17 @@ create table movie_reviews(
   cast_total_facebook_likes integer, 
   movie_facebook_likes integer,
   primary key (movie_id),
-  foreign key(movie_id) references movie(movie_id)
+  FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
 );
 
 
-select * from country;
-select * from movie;
-select * from movie_genres;
-select * from movie_keywords;
-select * from actors;
-select * from movie_actors;
-select * from directors;
-select * from movie_director;
-select * from movie_cost;
-select * from movie_reviews;
+SELECT * FROM country;
+SELECT * FROM movie;
+SELECT * FROM movie_genres;
+SELECT * FROM movie_keywords;
+SELECT * FROM actors;
+SELECT * FROM movie_actors;
+SELECT * FROM directors;
+SELECT * FROM movie_director;
+SELECT * FROM movie_cost;
+SELECT * FROM movie_reviews;
